@@ -7,11 +7,11 @@ import {
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-slate-100 p-6">
+    <div className="min-h-screen bg-slate-300 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <h1 className="text-3xl text-green-500 font-bold">Dashboard</h1>
             <p className="text-gray-500">Welcome back, Ken 👋</p>
           </div>
 
@@ -20,7 +20,7 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 text-slate-400">
           <Card
             title="Balance"
             value="$14,320"
@@ -65,7 +65,7 @@ export default function DashboardPage() {
 
         <div className="overflow-hidden rounded-xl bg-white shadow">
           <div className="border-b p-5">
-            <h2 className="text-lg font-semibold">Recent Transactions</h2>
+            <h2 className="text-lg text-green-500 font-semibold">Recent Transactions</h2>
           </div>
 
           <div className="overflow-x-auto">
