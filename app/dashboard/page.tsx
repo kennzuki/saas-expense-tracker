@@ -69,8 +69,8 @@ export default function DashboardPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
+            <table className="w-full text-slate-900">
+              <thead className="bg-slate-50 text-slate-700">
                 <tr>
                   <th className="p-4 text-left">Description</th>
                   <th className="p-4 text-left">Category</th>
@@ -139,7 +139,7 @@ type RowProps = {
 
 function Row({ description, category, date, amount, expense }: RowProps) {
   return (
-    <tr className="border-t">
+    <tr className="border-t font-normal text-slate-900">
       <td className="p-4">{description}</td>
       <td className="p-4">{category}</td>
       <td className="p-4">{date}</td>
