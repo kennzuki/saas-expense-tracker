@@ -1,11 +1,9 @@
 import Link from "next/link";
-import { Navbar } from "../components/navbar";
 
 export default function TransactionsPage() {
   return (
     <div className="min-h-screen bg-slate-300 p-6">
       <div className="mx-auto max-w-7xl">
-        <Navbar />
 
         <div className="rounded-xl bg-white p-8 shadow">
           <div className="mb-4 flex items-center justify-between">
