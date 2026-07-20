@@ -1,3 +1,7 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import {
   DollarSign,
   TrendingDown,
@@ -5,8 +9,15 @@ import {
   Wallet,
 } from "lucide-react";
 
-
 export default function DashboardPage() {
+  const { user, isLoaded } = useUser();
+
+  const displayName =
+    user?.firstName ||
+    user?.username ||
+    user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ||
+    "there";
+
   return (
     <div className="min-h-screen bg-slate-300 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -14,12 +25,17 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl text-green-500 font-bold">Dashboard</h1>
-            <p className="text-gray-500">Welcome back, Ken 👋</p>
+            <p className="text-gray-500">
+              {isLoaded ? `Welcome back, ${displayName} 👋` : "Welcome back 👋"}
+            </p>
           </div>
 
-          <button className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
+          <Link
+            href="/transactions"
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700"
+          >
             + Add Transaction
-          </button>
+          </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 text-slate-400">
