@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AddTransactions from "../components/AddTransactions";
 
 export default function TransactionsPage() {
   return (
@@ -14,6 +15,10 @@ export default function TransactionsPage() {
             <Link href="/dashboard" className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700">
               Back to dashboard
             </Link>
+          </div>
+
+          <div className="mb-6">
+            <AddTransactions />
           </div>
 
           <div className="overflow-hidden rounded-lg border border-slate-200">

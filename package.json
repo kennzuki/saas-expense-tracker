@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:neon": "node scripts/seed-neon.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.20",
+    "@hookform/resolvers": "^5.4.0",
     "@prisma/client": "^7.8.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
@@ -18,7 +20,7 @@
     "prisma": "^7.8.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-hook-form": "^7.81.0",
+    "react-hook-form": "^7.82.0",
     "react-hot-toast": "^2.6.0",
     "recharts": "^3.9.2",
     "stripe": "^22.3.2",
