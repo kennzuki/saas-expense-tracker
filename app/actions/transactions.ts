@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
@@ -93,11 +93,12 @@ export async function createTransaction(input: TransactionInput): Promise<Action
       select: { id: true },
     });
 
-    // Tag-based invalidation (Next.js 16)
+    // Invalidate transactions page & tag
     try {
+      revalidatePath("/transactions");
       revalidateTag("transactions", "max");
     } catch {
-      // Outside Next.js request context, revalidateTag is a no-op
+      // Outside Next.js request context, revalidation is a no-op
     }
 
     return { success: true, id: transaction.id };
@@ -107,5 +108,41 @@ export async function createTransaction(input: TransactionInput): Promise<Action
       success: false,
       error: "Couldn't save the transaction. Please try again.",
     };
+  }
+}
+
+export async function getTransactions() {
+  try {
+    let clerkId: string | null = null;
+    try {
+      const authObj = await auth();
+      clerkId = authObj.userId;
+    } catch {
+      // Outside Clerk context
+    }
+
+    const effectiveClerkId = clerkId ?? "demo-user";
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: effectiveClerkId },
+    });
+
+    if (!user) {
+      return [];
+    }
+
+    const transactions = await prisma.transaction.findMany({
+      where: { userId: user.id },
+      include: { category: true },
+      orderBy: { occurredAt: "desc" },
+    });
+
+    return transactions.map((tx) => ({
+      ...tx,
+      amount: Number(tx.amount),
+    }));
+  } catch (err) {
+    console.error("getTransactions failed:", err);
+    return [];
   }
 }

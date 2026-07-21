@@ -1,7 +1,10 @@
 import Link from "next/link";
 import AddTransactions from "../components/AddTransactions";
+import { getTransactions } from "@/app/actions/transactions";
 
-export default function TransactionsPage() {
+export default async function TransactionsPage() {
+  const transactions = await getTransactions();
+
   return (
     <div className="min-h-screen bg-slate-300 p-6">
       <div className="mx-auto max-w-7xl">
@@ -26,21 +29,43 @@ export default function TransactionsPage() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-4 py-3">Description</th>
+                  <th className="px-4 py-3">Category</th>
                   <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3 text-right">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-t border-slate-200">
-                  <td className="px-4 py-3">Salary</td>
-                  <td className="px-4 py-3">12 Jul</td>
-                  <td className="px-4 py-3 font-semibold text-emerald-600">+$3,200</td>
-                </tr>
-                <tr className="border-t border-slate-200">
-                  <td className="px-4 py-3">Groceries</td>
-                  <td className="px-4 py-3">8 Jul</td>
-                  <td className="px-4 py-3 font-semibold text-red-500">-$85</td>
-                </tr>
+                {transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-8 text-center text-slate-500">
+                      No transactions recorded yet. Add your first transaction above!
+                    </td>
+                  </tr>
+                ) : (
+                  transactions.map((tx) => {
+                    const formattedDate = new Date(tx.occurredAt).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    });
+                    const isExpense = tx.type === "EXPENSE";
+
+                    return (
+                      <tr key={tx.id} className="border-t border-slate-200 hover:bg-slate-50/50">
+                        <td className="px-4 py-3 font-medium text-slate-900">{tx.description}</td>
+                        <td className="px-4 py-3 text-slate-600">{tx.category?.name ?? "General"}</td>
+                        <td className="px-4 py-3 text-slate-500">{formattedDate}</td>
+                        <td
+                          className={`px-4 py-3 text-right font-semibold ${
+                            isExpense ? "text-red-500" : "text-emerald-600"
+                          }`}
+                        >
+                          {isExpense ? "-" : "+"}${tx.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
