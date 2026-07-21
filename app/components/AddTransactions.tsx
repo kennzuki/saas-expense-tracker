@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import { createTransaction, type TransactionInput } from "@/app/actions/transactions";
 
 type TransactionFormValues = {
   description: string;
@@ -37,10 +38,17 @@ export default function AddTransactions() {
   const [selectedType, setSelectedType] = useState<TransactionFormValues["type"]>(
     defaultValues.type,
   );
+  const [isPending, startTransition] = useTransition();
+  const [banner, setBanner] = useState<{ type: "success" | "error"; message: string } | null>(
+    null,
+  );
+
   const {
     register,
     handleSubmit,
     setValue,
+    setError,
+    reset,
     formState: { errors },
   } = useForm<TransactionFormValues>({
     defaultValues,
@@ -49,7 +57,36 @@ export default function AddTransactions() {
   const categoryOptions = selectedType === "INCOME" ? incomeCategories : expenseCategories;
 
   const onSubmit = (values: TransactionFormValues) => {
-    console.log("Transaction form submitted", values);
+    setBanner(null);
+
+    const payload: TransactionInput = {
+      description: values.description,
+      amount: values.amount,
+      type: values.type,
+      category: values.category,
+      occurredAt: values.occurredAt,
+      notes: values.notes,
+    };
+
+    startTransition(async () => {
+      const result = await createTransaction(payload);
+
+      if (!result.success) {
+        setBanner({ type: "error", message: result.error });
+
+        if (result.fieldErrors) {
+          for (const [field, messages] of Object.entries(result.fieldErrors)) {
+            if (messages?.[0]) {
+              setError(field as keyof TransactionFormValues, { message: messages[0] });
+            }
+          }
+        }
+        return;
+      }
+
+      setBanner({ type: "success", message: "Transaction saved." });
+      reset({ ...defaultValues, type: selectedType, category: values.category });
+    });
   };
 
   return (
@@ -64,6 +101,18 @@ export default function AddTransactions() {
           category, date, and notes.
         </p>
       </div>
+
+      {banner ? (
+        <div
+          className={`rounded-lg px-3 py-2 text-sm ${
+            banner.type === "success"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+          }`}
+        >
+          {banner.message}
+        </div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2 text-sm font-medium text-slate-700">
@@ -103,6 +152,10 @@ export default function AddTransactions() {
               const nextType = event.target.value as TransactionFormValues["type"];
               setSelectedType(nextType);
               setValue("type", nextType, { shouldValidate: true });
+              setValue(
+                "category",
+                nextType === "INCOME" ? incomeCategories[0] : expenseCategories[0],
+              );
             }}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500"
           >
@@ -154,12 +207,12 @@ export default function AddTransactions() {
       <div className="flex items-center justify-between gap-3">
         <button
           type="submit"
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+          disabled={isPending}
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Save transaction
+          {isPending ? "Saving..." : "Save transaction"}
         </button>
       </div>
     </form>
   );
 }
-
