@@ -1,6 +1,4 @@
-"use client";
-
-import { useUser } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import {
   DollarSign,
@@ -8,9 +6,12 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import RecentTransactions from "../components/recentTransactions";
+import { getTransactions } from "@/app/actions/transactions";
 
-export default function DashboardPage() {
-  const { user, isLoaded } = useUser();
+export default async function DashboardPage() {
+  const user = await currentUser();
+  const transactions = await getTransactions();
 
   const displayName =
     user?.firstName ||
@@ -18,15 +19,33 @@ export default function DashboardPage() {
     user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ||
     "there";
 
+  const income = transactions
+    .filter((tx) => tx.type === "INCOME")
+    .reduce((acc, tx) => acc + tx.amount, 0);
+
+  const expenses = transactions
+    .filter((tx) => tx.type === "EXPENSE")
+    .reduce((acc, tx) => acc + tx.amount, 0);
+
+  const balance = income - expenses;
+  const savings = balance;
+
+  const formatCurrency = (val: number) => {
+    return (val < 0 ? "-" : "") + "$" + Math.abs(val).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-300 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        
+
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl text-green-500 font-bold">Dashboard</h1>
+            <h1 className="text-3xl text-emerald-600 font-bold">Dashboard</h1>
             <p className="text-gray-500">
-              {isLoaded ? `Welcome back, ${displayName} 👋` : "Welcome back 👋"}
+              Welcome back, {displayName} 👋
             </p>
           </div>
 
@@ -41,25 +60,25 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4 text-slate-400">
           <Card
             title="Balance"
-            value="$14,320"
+            value={formatCurrency(balance)}
             icon={<Wallet />}
             color="bg-blue-500"
           />
           <Card
             title="Income"
-            value="$9,850"
+            value={formatCurrency(income)}
             icon={<TrendingUp />}
-            color="bg-green-500"
+            color="bg-emerald-500"
           />
           <Card
             title="Expenses"
-            value="$4,530"
+            value={formatCurrency(expenses)}
             icon={<TrendingDown />}
             color="bg-red-500"
           />
           <Card
             title="Savings"
-            value="$5,320"
+            value={formatCurrency(savings)}
             icon={<DollarSign />}
             color="bg-yellow-500"
           />
@@ -81,46 +100,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl bg-white shadow">
-          <div className="border-b p-5">
-            <h2 className="text-lg text-green-500 font-semibold">Recent Transactions</h2>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-slate-900">
-              <thead className="bg-slate-50 text-slate-700">
-                <tr>
-                  <th className="p-4 text-left">Description</th>
-                  <th className="p-4 text-left">Category</th>
-                  <th className="p-4 text-left">Date</th>
-                  <th className="p-4 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <Row
-                  description="Netflix"
-                  category="Entertainment"
-                  date="12 Jul"
-                  amount="-15.99"
-                  expense
-                />
-                <Row
-                  description="Salary"
-                  category="Income"
-                  date="10 Jul"
-                  amount="+3200"
-                />
-                <Row
-                  description="Groceries"
-                  category="Food"
-                  date="8 Jul"
-                  amount="-85.00"
-                  expense
-                />
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <RecentTransactions />
       </div>
     </div>
   );
@@ -139,35 +119,10 @@ function Card({ title, value, icon, color }: CardProps) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">{title}</p>
-          <h2 className="mt-2 text-3xl font-bold">{value}</h2>
+          <h2 className="mt-2 text-3xl font-bold text-slate-800">{value}</h2>
         </div>
         <div className={`${color} rounded-full p-4 text-white`}>{icon}</div>
       </div>
     </div>
-  );
-}
-
-type RowProps = {
-  description: string;
-  category: string;
-  date: string;
-  amount: string;
-  expense?: boolean;
-};
-
-function Row({ description, category, date, amount, expense }: RowProps) {
-  return (
-    <tr className="border-t font-normal text-slate-900">
-      <td className="p-4">{description}</td>
-      <td className="p-4">{category}</td>
-      <td className="p-4">{date}</td>
-      <td
-        className={`p-4 text-right font-semibold ${
-          expense ? "text-red-500" : "text-green-600"
-        }`}
-      >
-        {amount}
-      </td>
-    </tr>
   );
 }
