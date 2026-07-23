@@ -1,37 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SaaS Expense Tracker
+
+A full-stack expense tracking application built with Next.js 16, featuring authenticated accounts, transaction management, and spending analytics.
+
+## Features
+
+- **Authentication** — secure sign-up/sign-in powered by Clerk
+- **Transaction management** — add, edit, delete, and categorize expenses
+- **Form validation** — type-safe forms with React Hook Form + Zod
+- **Analytics dashboard** — visualize spending trends with Recharts
+- **Toast notifications** — real-time feedback via react-hot-toast
+- **Type-safe database layer** — Prisma 7 ORM with a Neon serverless Postgres backend
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | [Next.js 16](https://nextjs.org) (App Router) |
+| Language | TypeScript |
+| Auth | [Clerk](https://clerk.com) |
+| Database | [Neon](https://neon.tech) (serverless Postgres) |
+| ORM | [Prisma 7](https://www.prisma.io) |
+| Forms & Validation | React Hook Form + Zod |
+| Charts | Recharts |
+| Styling | Tailwind CSS |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- A [Neon](https://neon.tech) Postgres database
+- A [Clerk](https://clerk.com) application (for auth keys)
+
+### Installation
+
+```bash
+git clone https://github.com/kennzuki/saas-expense-tracker.git
+cd saas-expense-tracker
+npm install
+```
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+DATABASE_URL=your_neon_connection_string
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+```
+
+### Database Setup
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+npm run seed:neon   # optional: seed sample data
+```
+
+### Run the App
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Roadmap
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [ ] Stripe-powered subscription tiers (free vs. premium)
+- [ ] Multi-currency support
+- [ ] Recurring transactions
+- [ ] Export to CSV/PDF
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# saas-expense-tracker
+This project is for portfolio/demonstration purposes.
