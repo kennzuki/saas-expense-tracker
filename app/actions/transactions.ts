@@ -96,6 +96,7 @@ export async function createTransaction(input: TransactionInput): Promise<Action
     // Invalidate transactions page & tag
     try {
       revalidatePath("/transactions");
+      revalidatePath("/income");
       revalidateTag("transactions", "max");
     } catch {
       // Outside Next.js request context, revalidation is a no-op
@@ -218,6 +219,7 @@ export async function updateTransaction(
 
     try {
       revalidatePath("/transactions");
+      revalidatePath("/income");
       revalidatePath("/dashboard");
       revalidateTag("transactions", "max");
     } catch {
@@ -268,6 +270,7 @@ export async function deleteTransaction(id: string): Promise<{ success: boolean;
 
     try {
       revalidatePath("/transactions");
+      revalidatePath("/income");
       revalidatePath("/dashboard");
       revalidateTag("transactions", "max");
     } catch {

@@ -5,6 +5,7 @@ const links = [
   { href: "/categories", label: "Categories" },
   { href: "/transactions", label: "Transactions" },
   { href: "/expenses", label: "Expenses" },
+  { href: "/income", label: "Income" },
 ];
 
 export function Navbar() {
