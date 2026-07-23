@@ -146,3 +146,137 @@ export async function getTransactions() {
     return [];
   }
 }
+
+export async function updateTransaction(
+  id: string,
+  input: TransactionInput
+): Promise<ActionResult> {
+  const parsed = transactionSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please fix the highlighted fields.",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  try {
+    let clerkId: string | null = null;
+    try {
+      const authObj = await auth();
+      clerkId = authObj.userId;
+    } catch {
+      // Outside Clerk context
+    }
+
+    const effectiveClerkId = clerkId ?? "demo-user";
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: effectiveClerkId },
+    });
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const existing = await prisma.transaction.findUnique({
+      where: { id, userId: user.id },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Transaction not found" };
+    }
+
+    const categoryRecord = await prisma.category.upsert({
+      where: {
+        userId_name_type: {
+          userId: user.id,
+          name: parsed.data.category,
+          type: parsed.data.type,
+        },
+      },
+      update: {},
+      create: {
+        userId: user.id,
+        name: parsed.data.category,
+        type: parsed.data.type,
+      },
+    });
+
+    await prisma.transaction.update({
+      where: { id },
+      data: {
+        categoryId: categoryRecord.id,
+        description: parsed.data.description,
+        amount: parsed.data.amount,
+        type: parsed.data.type,
+        occurredAt: parsed.data.occurredAt,
+        notes: parsed.data.notes ? parsed.data.notes : null,
+      },
+    });
+
+    try {
+      revalidatePath("/transactions");
+      revalidatePath("/dashboard");
+      revalidateTag("transactions", "max");
+    } catch {
+      // No-op
+    }
+
+    return { success: true, id };
+  } catch (err) {
+    console.error("updateTransaction failed:", err);
+    return {
+      success: false,
+      error: "Couldn't update the transaction. Please try again.",
+    };
+  }
+}
+
+export async function deleteTransaction(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    let clerkId: string | null = null;
+    try {
+      const authObj = await auth();
+      clerkId = authObj.userId;
+    } catch {
+      // Outside Clerk context
+    }
+
+    const effectiveClerkId = clerkId ?? "demo-user";
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: effectiveClerkId },
+    });
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const existing = await prisma.transaction.findUnique({
+      where: { id, userId: user.id },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Transaction not found" };
+    }
+
+    await prisma.transaction.delete({
+      where: { id },
+    });
+
+    try {
+      revalidatePath("/transactions");
+      revalidatePath("/dashboard");
+      revalidateTag("transactions", "max");
+    } catch {
+      // No-op
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("deleteTransaction failed:", err);
+    return { success: false, error: "Failed to delete transaction" };
+  }
+}

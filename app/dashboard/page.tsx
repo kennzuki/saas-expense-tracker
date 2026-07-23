@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import RecentTransactions from "../components/recentTransactions";
 import { getTransactions } from "@/app/actions/transactions";
+import { MonthlyChart, CategoryPieChart } from "../components/DashboardCharts";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -36,6 +37,51 @@ export default async function DashboardPage() {
       maximumFractionDigits: 2,
     });
   };
+
+  // Group by last 6 months
+  const last6Months = Array.from({ length: 6 }).map((_, i) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - i);
+    return {
+      monthKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+      monthName: d.toLocaleDateString("en-US", { month: "short" }),
+      income: 0,
+      expense: 0,
+    };
+  }).reverse();
+
+  transactions.forEach((tx) => {
+    const date = new Date(tx.occurredAt);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const bucket = last6Months.find((m) => m.monthKey === key);
+    if (bucket) {
+      if (tx.type === "INCOME") {
+        bucket.income += tx.amount;
+      } else {
+        bucket.expense += tx.amount;
+      }
+    }
+  });
+
+  const monthlyChartData = last6Months.map((m) => ({
+    month: m.monthName,
+    Income: m.income,
+    Expense: m.expense,
+  }));
+
+  // Group by category
+  const categoryMap: Record<string, number> = {};
+  transactions
+    .filter((tx) => tx.type === "EXPENSE")
+    .forEach((tx) => {
+      const catName = tx.category?.name || "General";
+      categoryMap[catName] = (categoryMap[catName] || 0) + tx.amount;
+    });
+
+  const categoryPieData = Object.entries(categoryMap).map(([name, value]) => ({
+    name,
+    value,
+  }));
 
   return (
     <div className="min-h-screen bg-slate-300 p-6">
@@ -86,17 +132,13 @@ export default async function DashboardPage() {
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="rounded-xl bg-white p-6 shadow lg:col-span-2">
-            <h2 className="mb-4 text-lg font-semibold">Monthly Expenses</h2>
-            <div className="flex h-72 items-center justify-center rounded-lg border-2 border-dashed text-gray-400">
-              Chart goes here
-            </div>
+            <h2 className="mb-4 text-lg font-semibold text-slate-800">Monthly Expenses &amp; Income</h2>
+            <MonthlyChart data={monthlyChartData} />
           </div>
 
           <div className="rounded-xl bg-white p-6 shadow">
-            <h2 className="mb-4 text-lg font-semibold">Spending by Category</h2>
-            <div className="flex h-72 items-center justify-center rounded-lg border-2 border-dashed text-gray-400">
-              Pie Chart
-            </div>
+            <h2 className="mb-4 text-lg font-semibold text-slate-800">Spending by Category</h2>
+            <CategoryPieChart data={categoryPieData} />
           </div>
         </div>
 
