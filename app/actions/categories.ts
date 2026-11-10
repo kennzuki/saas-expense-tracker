@@ -2,7 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { TransactionType } from "@prisma/client";
+import type { TransactionType } from "@/generated/prisma/client";
 
 export async function getCategories(type: TransactionType) {
   try {
