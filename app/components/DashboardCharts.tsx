@@ -55,7 +55,7 @@ export function MonthlyChart({ data }: MonthlyChartProps) {
             tickFormatter={(value) => `$${value}`}
           />
           <Tooltip
-            formatter={(value: number) => [formatValue(value), ""]}
+            formatter={(value) => [formatValue(Number(value ?? 0)), ""]}
             contentStyle={{
               backgroundColor: "#fff",
               border: "1px solid #e2e8f0",
@@ -119,10 +119,13 @@ export function CategoryPieChart({ data }: CategoryPieChartProps) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => [
-                    `$${value.toLocaleString()} (${((value / total) * 100).toFixed(1)}%)`,
+                  formatter={(value) => {
+                    const numericValue = Number(value ?? 0);
+                    return [
+                    `$${numericValue.toLocaleString()} (${((numericValue / total) * 100).toFixed(1)}%)`,
                     "",
-                  ]}
+                    ];
+                  }}
                   contentStyle={{
                     backgroundColor: "#fff",
                     border: "1px solid #e2e8f0",
