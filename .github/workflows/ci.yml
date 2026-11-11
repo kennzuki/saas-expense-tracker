@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Lint and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/expense_tracker?schema=public
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dG9rZW4uY2xlcmsuZGV2JA
+          CLERK_SECRET_KEY: sk_test_placeholder
+
+  docker:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: saas-expense-tracker:ci
+          build-args: |
+            DATABASE_URL=postgresql://postgres:postgres@localhost:5432/expense_tracker?schema=public
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dG9rZW4uY2xlcmsuZGV2JA
+            CLERK_SECRET_KEY=sk_test_placeholder

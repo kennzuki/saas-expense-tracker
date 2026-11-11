@@ -66,6 +66,28 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
+## CI and Docker
+
+GitHub Actions runs ESLint, builds the production app, and verifies the Docker image on pushes to `main`, pull requests, and manual runs. CI uses placeholder environment values and does not connect to a database or publish an image.
+
+Build and run the container locally (replace the values with your Clerk and Neon credentials):
+
+```bash
+docker build \
+  --build-arg DATABASE_URL="your_neon_connection_string" \
+  --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key" \
+  --build-arg CLERK_SECRET_KEY="your_clerk_secret_key" \
+  -t saas-expense-tracker .
+
+docker run --rm -p 3000:3000 \
+  -e DATABASE_URL="your_neon_connection_string" \
+  -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_publishable_key" \
+  -e CLERK_SECRET_KEY="your_clerk_secret_key" \
+  saas-expense-tracker
+```
+
+The database and Clerk credentials must also be provided when the container runs. Apply Prisma migrations to the target database before starting a deployment, for example with `npx prisma migrate deploy` from an environment that has the production `DATABASE_URL`.
+
 ## Roadmap
 
 - [ ] Stripe-powered subscription tiers (free vs. premium)
